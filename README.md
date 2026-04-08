@@ -1,1 +1,0 @@
-# urta-q-riva
