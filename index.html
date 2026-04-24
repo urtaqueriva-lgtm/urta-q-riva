@@ -1567,7 +1567,16 @@ function exportarXLSX(){
   var ws=XLSX.utils.json_to_sheet(linhas);
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Membros',ws);
-  XLSX.writeFile(wb,'membros_urtaqriva_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  var buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='membros_urtaqriva_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
   toast('📊 Excel exportado!');
 }
 
