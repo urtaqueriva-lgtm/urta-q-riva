@@ -1567,8 +1567,11 @@ function exportarXLSX(){
   var ws=XLSX.utils.json_to_sheet(linhas);
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Membros',ws);
-  var buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var bin=XLSX.write(wb,{bookType:'xlsx',type:'binary'});
+  var ab=new ArrayBuffer(bin.length);
+  var view=new Uint8Array(ab);
+  for(var i=0;i<bin.length;i++) view[i]=bin.charCodeAt(i)&0xFF;
+  var blob=new Blob([ab],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
   a.href=url;
