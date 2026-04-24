@@ -225,6 +225,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bk);color:var(--cr);min-he
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:rgba(245,216,0,.2);border-radius:4px;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1410,7 +1411,8 @@ function aMembros(){
 
   h+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">';
   h+='<button class="btn-y" onclick="addMem()">+ Adicionar membro</button>';
-  h+='<button class="btn-outline" onclick="exportarMembros()">📥 Exportar lista</button>';
+  h+='<button class="btn-outline" onclick="exportarCSV()">📥 Exportar CSV</button>';
+  h+='<button class="btn-outline" onclick="exportarXLSX()">📊 Exportar Excel</button>';
   h+='</div>';
 
   // Member cards
@@ -1494,27 +1496,76 @@ function addPontos(id){
   toast('✅ Pontos adicionados!'); renderContent();
 }
 
-function exportarMembros(){
-  var rows=['Nome,CPF,RG,Nascimento,Celular,Email,Cidade,Vinculo,Outra Equipe,Nome Outra Equipe,Camiseta,Disponibilidade,2021,2023,Areas,Indicado por,Pontos'];
+function _buildLinhas(){
+  var linhas=[];
   for(var i=0;i<MEMBERS.length;i++){
     var m=MEMBERS[i];
-    var areas=(m.area||[]).map(aLbl).join(' | ');
-    rows.push([
-      '"'+(m.nome||'')+'"','"'+(m.cpf||'')+'"','"'+(m.rg||'')+'"','"'+(m.nasc||'')+'"',
-      '"'+(m.tel||'')+'"','"'+(m.email||'')+'"','"'+(m.cidade||'')+'"','"'+(m.vinculo||'')+'"',
-      '"'+(m.outraEquipe||'nao')+'"','"'+(m.nomeOutraEquipe||'')+'"',
-      '"'+(m.camisa||'')+'"','"'+(m.disp||'')+'"',
-      '"'+(m.ed2021==='sim'?'Sim':'Não')+'"','"'+(m.ed2023==='sim'?'Sim':'Não')+'"',
-      '"'+areas+'"','"'+(m.indicadoPor||'')+'"',m.pts||0
-    ].join(','));
+    var areas=(m.area&&Array.isArray(m.area)?m.area:[]).map(aLbl).join(' | ');
+    var veics=(m.veiculos&&Array.isArray(m.veiculos)?m.veiculos:[]).map(function(v){return (v.tipo||'')+':'+(v.modelo||'')+':'+(v.placa||'');}).join(' | ');
+    linhas.push({
+      'ID':              m.id||'',
+      'Nome':            m.nome||'',
+      'CPF':             m.cpf||'',
+      'RG':              m.rg||'',
+      'Nascimento':      m.nasc||'',
+      'Celular':         m.tel||'',
+      'E-mail':          m.email||'',
+      'Profissão':       m.prof||'',
+      'Rua':             m.rua||'',
+      'Número':          m.num||'',
+      'Complemento':     m.comp||'',
+      'Bairro':          m.bairro||'',
+      'Cidade':          m.cidade||'',
+      'CEP':             m.cep||'',
+      'Vínculo com Garibaldi':   m.vinculo||'',
+      'Participa outra equipe':  m.outraEquipe||'',
+      'Município outra equipe':  m.munOutraEquipe||'',
+      'Nome outra equipe':       m.nomeOutraEquipe||'',
+      'Interesse camiseta':      m.camInteresse||'',
+      'Tamanho camiseta':        m.camTam||m.camisa||'',
+      'Disponibilidade':         m.disp||'',
+      'Saúde/alergias':          m.saude||'',
+      'Habilidades':             m.hab||'',
+      'Áreas de interesse':      areas,
+      'Veículos':                veics,
+      'Edição 2021':             m.ed2021||'',
+      'Edição 2023':             m.ed2023||'',
+      'Indicado por':            m.indicado||m.indicadoPor||'',
+      'Pontos':                  m.pts||0,
+      'Tipo':                    m.tipo||'',
+      'Admin':                   m.isAdmin?'sim':'não',
+      'Autoriza imagem':         m.authImg||'',
+      'Autoriza dados':          m.authDados||''
+    });
   }
-  var csv=rows.join('\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  return linhas;
+}
+
+function exportarCSV(){
+  var linhas=_buildLinhas();
+  if(!linhas.length){toast('Nenhum membro para exportar.','warn');return;}
+  var cols=Object.keys(linhas[0]);
+  function esc(v){var s=String(v===null||v===undefined?'':v);if(s.indexOf(',')>-1||s.indexOf('"')>-1||s.indexOf('\n')>-1)s='"'+s.replace(/"/g,'""')+'"';return s;}
+  var rows=[cols.map(esc).join(',')];
+  for(var i=0;i<linhas.length;i++)rows.push(cols.map(function(c){return esc(linhas[i][c]);}).join(','));
+  var blob=new Blob(['\uFEFF'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='membros-urta-q-riva.csv';
+  a.download='membros_urtaqriva_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
-  toast('📥 Lista exportada!');
+  URL.revokeObjectURL(a.href);
+  toast('📥 CSV exportado!');
+}
+
+function exportarXLSX(){
+  if(typeof XLSX==='undefined'){toast('Biblioteca Excel não carregada. Tente recarregar a página.','err');return;}
+  var linhas=_buildLinhas();
+  if(!linhas.length){toast('Nenhum membro para exportar.','warn');return;}
+  var ws=XLSX.utils.json_to_sheet(linhas);
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Membros',ws);
+  XLSX.writeFile(wb,'membros_urtaqriva_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('📊 Excel exportado!');
 }
 
 function addMem(){
