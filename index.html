@@ -445,39 +445,43 @@ var META = 30000;
 // GOOGLE SHEETS — Banco de dados central
 // Técnica JSONP: bypassa CORS completamente, funciona no GitHub Pages
 // ══════════════════════════════════════════════════════════════
-var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyj7pcttchis_Q1rwkEGQaa1Jsl6MLEsBkEl4307IuFzODtFwc4nataP3D9I7jssWwn/exec';
+var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwF_thbP0feXBPQd8lfSvjtseiKhnJBvyqAXVSKn8ysLpMF46zc0qG_dOsbrFkiYDg/exec';
 var _sheetsCallbackId = 0;
 
-// ── JSONP universal — leitura e escrita sem CORS ──────────────
-function sheetsCall(acao, dados, callback) {
-  if (!SHEETS_URL) { if(callback) callback(null); return; }
+// ── Leitura via JSONP (GET — sem CORS) ────────────────────────
+function sheetsGet(tipo, callback) {
+  if (!SHEETS_URL) { callback(null); return; }
   var cbName = '_sc' + (++_sheetsCallbackId);
   window[cbName] = function(data) {
-    if(callback) callback(data);
+    callback(data);
     delete window[cbName];
     var el = document.getElementById(cbName);
     if (el) el.parentNode.removeChild(el);
   };
-  var url = SHEETS_URL + '?acao=' + acao + '&callback=' + cbName + '&t=' + Date.now();
-  if (dados) url += '&dados=' + encodeURIComponent(JSON.stringify(dados));
   var script = document.createElement('script');
   script.id = cbName;
-  script.src = url;
+  script.src = SHEETS_URL + '?tipo=' + tipo + '&callback=' + cbName + '&t=' + Date.now();
   script.onerror = function() {
-    console.log('sheetsCall error:', acao);
-    if(callback) callback(null);
+    console.log('sheetsGet error:', tipo);
+    callback(null);
     delete window[cbName];
   };
   document.head.appendChild(script);
-  setTimeout(function() { if (window[cbName]) { window[cbName](null); } }, 10000);
+  // Timeout de segurança
+  setTimeout(function() {
+    if (window[cbName]) { window[cbName](null); }
+  }, 8000);
 }
 
-function sheetsGet(tipo, callback) { sheetsCall(tipo, null, callback); }
+// ── Escrita via POST no-cors (os dados chegam mesmo sem resposta) ──
 function sheetsPost(tipo, payload) {
-  sheetsCall('salvar_' + tipo, payload, function(res) {
-    if (res && res.status === 'ok') console.log('✅ Sheets:', res.msg || tipo);
-    else console.log('❌ Sheets erro:', res ? res.msg : 'sem resposta');
-  });
+  if (!SHEETS_URL) return;
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({tipo: tipo, payload: payload}),
+    mode: 'no-cors'
+  }).catch(function(e){ console.log('sheetsPost error:', e); });
 }
 
 // ── Carregar membros do Sheets ao iniciar ─────────────────────
@@ -1401,6 +1405,7 @@ function aMembros(){
   h+='<div class="stat-c"><div class="stat-n">'+MEMBERS.length+'</div><div class="stat-l">Total</div></div>';
   h+='<div class="stat-c"><div class="stat-n">'+c21+'</div><div class="stat-l">Estiveram em 2021</div></div>';
   h+='<div class="stat-c"><div class="stat-n">'+c23+'</div><div class="stat-l">Estiveram em 2023</div></div>';
+  h+='<div class="stat-c"><div class="stat-n">'+novos+'</div><div class="stat-l">Novos membros</div></div>';
   h+='</div>';
 
   h+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">';
