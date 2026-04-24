@@ -1416,7 +1416,8 @@ function aMembros(){
   // Member cards
   for(var i=0;i<MEMBERS.length;i++){
     var m=MEMBERS[i];
-    var areas=(m.area||[]).map(aLbl).join(', ')||'—';
+    var _areaArr=Array.isArray(m.area)?m.area:(m.area?String(m.area).split(','):[]);
+    var areas=_areaArr.map(aLbl).join(', ')||'—';
     h+='<div class="card" style="margin-bottom:10px;">';
 
     // Header row
