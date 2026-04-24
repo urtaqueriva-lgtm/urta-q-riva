@@ -1460,8 +1460,9 @@ function aMembros(){
     }
 
     // Veículos
-    if(m.veiculos&&m.veiculos.length){
-      h+='<div style="font-size:11px;color:var(--mt);margin-bottom:8px;">🚗 '+m.veiculos.map(function(v){return (v.modelo||'—')+' · '+(v.placa||'s/placa');}).join(' | ')+'</div>';
+    var _veicArr=Array.isArray(m.veiculos)?m.veiculos:[];
+    if(_veicArr.length){
+      h+='<div style="font-size:11px;color:var(--mt);margin-bottom:8px;">🚗 '+_veicArr.map(function(v){return (v.modelo||'—')+' · '+(v.placa||'s/placa');}).join(' | ')+'</div>';
     }
 
     // Actions
