@@ -1305,16 +1305,11 @@ function aHome(){
     for(var i=0;i<semBday.length;i++){var p=semBday[i].nasc.split('-');h+='<div class="bday-item"><span style="font-size:20px;">🎂</span><div><div style="font-weight:600;">'+semBday[i].nome+'</div><div style="font-size:11px;color:var(--mt);">'+p[2]+'/'+p[1]+' · '+(semBday[i].email||'sem email')+'</div></div></div>';}
   }
   h+='<div class="sec">📅 Próximos eventos</div>'+upEvts(4);
-  h+='<div class="sec">🔗 Google Sheets</div>';
-  h+='<div class="card" style="display:flex;align-items:center;gap:12px;">';
-  h+='<div style="flex:1;"><div style="font-weight:600;font-size:13px;margin-bottom:3px;">Sincronizar com planilha</div><div style="font-size:11px;color:var(--mt);">Envia membros, caixa e enigmas para o Google Sheets</div></div>';
-  h+='<button class="btn-y" onclick="syncParaSheets()" style="flex-shrink:0;">🔄 Sincronizar</button>';
-  h+='</div>';
   return h;
 }
 
 function aMembros(){
-  var h='<div class="sec">👥 Membros ('+MEMBERS.length+'/50)</div>';
+  var h='<div class="sec">👥 Membros ('+MEMBERS.length+')</div>';
 
   // Stats row
   var vet=MEMBERS.filter(function(m){return m.ed2021==='sim'||m.ed2023==='sim';}).length;
@@ -1325,7 +1320,7 @@ function aMembros(){
   h+='<div class="stat-c"><div class="stat-n">'+MEMBERS.length+'</div><div class="stat-l">Total</div></div>';
   h+='<div class="stat-c"><div class="stat-n">'+c21+'</div><div class="stat-l">Estiveram em 2021</div></div>';
   h+='<div class="stat-c"><div class="stat-n">'+c23+'</div><div class="stat-l">Estiveram em 2023</div></div>';
-  h+='<div class="stat-c"><div class="stat-n">'+novos+'</div><div class="stat-l">Novos membros</div></div>';
+  h+='<div class="stat-c"><div class="stat-n">'+novos+'</div><div class="stat-l">Estreantes 2026</div></div>';
   h+='</div>';
 
   h+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">';
@@ -1524,7 +1519,7 @@ function aCaixa(){
   h+='<div class="card">';
   var rev=CAIXA.slice().reverse();
   for(var i=0;i<rev.length;i++){
-    h+='<div class="cx-row"><div><div style="font-size:13px;font-weight:500;">'+rev[i].desc+'</div><div style="font-size:11px;color:var(--mt);">'+rev[i].data+' · '+rev[i].resp+'</div></div><div class="'+(rev[i].cat==='receita'?'cin':'cout')+'">'+(rev[i].cat==='receita'?'+':'-')+fmt(rev[i].val)+'</div></div>';
+    h+='<div class="cx-row"><div><div style="font-size:13px;font-weight:500;">'+rev[i].desc+'</div><div style="font-size:11px;color:var(--mt);">'+rev[i].data+' · '+rev[i].resp+'</div></div><div class="'+(rev[i].cat==='receita'?'cin':'cout')+'">'+(rev[i].cat==='receita'?'+':'-')+fmt(rev[i].val)+'</div><button onclick="remCx('+rev[i].id+')" style="background:none;border:none;color:rgba(214,59,47,.5);cursor:pointer;font-size:14px;padding:2px 6px;flex-shrink:0;" title="Excluir">🗑</button></div>';
   }
   h+='</div>';
   return h;
@@ -1545,7 +1540,7 @@ function aEventos(){
   for(var i=0;i<sorted.length;i++){
     var e=sorted[i]; var dt=fmtD(e.data);
     var confNames=MEMBERS.filter(function(m){return PRESENCAS['p_'+e.id+'_'+m.id];}).map(function(m){return m.nome.split(' ')[0];});
-    h+='<div class="cal-item" style="flex-wrap:wrap;"><div class="cdt"><div class="cday">'+dt.day+'</div><div class="cmon">'+dt.month+'</div></div><div class="cinfo"><div class="cname">'+e.nome+'</div><div class="cdesc">'+e.desc+'</div><div style="font-size:11px;color:'+(confNames.length>0?'#52be80':'var(--mt)')+';margin-top:4px;">✅ '+confNames.length+' confirmado'+(confNames.length!==1?'s':'')+(confNames.length>0?' — '+confNames.join(', '):'')+'</div><button onclick="marcarPresencaAdmin('+e.id+')" style="margin-top:4px;background:none;border:1px solid var(--br);border-radius:5px;padding:3px 9px;color:var(--mt);font-size:10px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">+ Marcar presença manual</button></div><span class="ctag t-'+e.tag+'">'+tLbl(e.tag)+'</span></div>';
+    h+='<div class="cal-item" style="flex-wrap:wrap;"><div class="cdt"><div class="cday">'+dt.day+'</div><div class="cmon">'+dt.month+'</div></div><div class="cinfo"><div class="cname">'+e.nome+'</div><div class="cdesc">'+e.desc+'</div><div style="font-size:11px;color:'+(confNames.length>0?'#52be80':'var(--mt)')+';margin-top:4px;">✅ '+confNames.length+' confirmado'+(confNames.length!==1?'s':'')+(confNames.length>0?' — '+confNames.join(', '):'')+'</div><button onclick="marcarPresencaAdmin('+e.id+')" style="margin-top:4px;background:none;border:1px solid var(--br);border-radius:5px;padding:3px 9px;color:var(--mt);font-size:10px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">+ Marcar presença manual</button><button onclick="remEvt('+e.id+')" style="margin-top:4px;background:none;border:1px solid rgba(214,59,47,.3);border-radius:5px;padding:3px 9px;color:#e74c3c;font-size:10px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">🗑 Excluir evento</button></div><span class="ctag t-'+e.tag+'">'+tLbl(e.tag)+'</span></div>';
   }
   return h;
 }
@@ -1574,6 +1569,7 @@ function aEmails(){
     var e=ENIGMAS[i];
     h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div style="flex:1;"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;letter-spacing:2px;color:var(--y);margin-bottom:4px;">'+e.semana+(e.ativo?' <span style="background:var(--g);color:#fff;padding:1px 7px;border-radius:4px;font-size:10px;">ATIVO</span>':'')+'</div><div style="font-size:13px;font-weight:600;">'+e.pergunta+'</div><div style="font-size:11px;color:var(--mt);margin-top:3px;">Resposta: '+e.resposta+' · '+e.pts+' pts'+(e.pdfLink?' · <a href="'+e.pdfLink+'" target="_blank" style="color:var(--y);">📄 PDF</a>':'')+'</div></div><button class="btn-y" onclick="editEnigma('+i+')" style="padding:6px 12px;font-size:11px;flex-shrink:0;">✏️ Editar</button></div>';
     if(!e.ativo) h+='<button onclick="ativarEnigma('+i+')" style="margin-top:8px;width:100%;background:rgba(245,216,0,.1);border:1px solid var(--y);border-radius:6px;padding:7px;color:var(--y);font-family:\'Barlow Condensed\',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;">▶ ATIVAR ESTE ENIGMA</button>';
+    h+='<button onclick="remEnigma('+e.id+')" style="margin-top:6px;width:100%;background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:6px;padding:7px;color:#e74c3c;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">🗑 EXCLUIR ENIGMA</button>';
     h+='</div>';
   }
   h+='<button onclick="addEnigma()" style="width:100%;margin-top:6px;padding:10px;background:rgba(245,216,0,.08);border:1px dashed rgba(245,216,0,.3);border-radius:8px;color:var(--y);font-family:\'Barlow Condensed\',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;">+ NOVO ENIGMA</button>';
@@ -1605,6 +1601,22 @@ function addEnigma(){
   var pdf=prompt('Link PDF (opcional):')||'';
   ENIGMAS.push({id:Date.now(),semana:semana,pergunta:perg,dica:dica,resposta:resp,pts:pts,ativo:false,pdfLink:pdf});
   saveEnig(); toast('✅ Enigma criado!'); renderContent();
+}
+function remCx(id){
+  if(!confirm('Excluir este lançamento?'))return;
+  for(var i=0;i<CAIXA.length;i++){if(CAIXA[i].id===id){CAIXA.splice(i,1);break;}}
+  saveCx(); toast('Lançamento removido.','warn'); renderContent();
+}
+function remEvt(id){
+  if(!confirm('Excluir este evento?'))return;
+  for(var i=0;i<EVENTOS.length;i++){if(EVENTOS[i].id===id){EVENTOS.splice(i,1);break;}}
+  saveEvt(); toast('Evento removido.','warn'); renderContent();
+}
+function remEnigma(id){
+  if(ENIGMAS.length===1&&ENIGMAS[0].id===id&&ENIGMAS[0].ativo){toast('Não é possível excluir o único enigma ativo.','err');return;}
+  if(!confirm('Excluir este enigma permanentemente?'))return;
+  for(var i=0;i<ENIGMAS.length;i++){if(ENIGMAS[i].id===id){ENIGMAS.splice(i,1);break;}}
+  saveEnig(); toast('Enigma removido.','warn'); renderContent();
 }
 </script>
 </body>
