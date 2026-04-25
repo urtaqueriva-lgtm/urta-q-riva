@@ -701,6 +701,13 @@ function upEvts(max){
   return fut.map(function(e){var dt=fmtD(e.data);return '<div class="cal-item"><div class="cdt"><div class="cday">'+dt.day+'</div><div class="cmon">'+dt.month+'</div></div><div class="cinfo"><div class="cname">'+e.nome+'</div><div class="cdesc">'+e.desc+'</div></div><span class="ctag t-'+e.tag+'">'+tLbl(e.tag)+'</span></div>';}).join('');
 }
 
+function upEvtsGincana(max){
+  var hoje=new Date();
+  var fut=EVENTOS.filter(function(e){return e.tag==='gincana'&&new Date(e.data+'T12:00')>=hoje;}).sort(function(a,b){return new Date(a.data)-new Date(b.data);}).slice(0,max||3);
+  if(!fut.length) return '<div class="card"><div class="empty">Nenhum evento da gincana programado.</div></div>';
+  return fut.map(function(e){var dt=fmtD(e.data);return '<div class="cal-item"><div class="cdt"><div class="cday">'+dt.day+'</div><div class="cmon">'+dt.month+'</div></div><div class="cinfo"><div class="cname">'+e.nome+'</div><div class="cdesc">'+e.desc+'</div></div><span class="ctag t-'+e.tag+'">'+tLbl(e.tag)+'</span></div>';}).join('');
+}
+
 /* ═══ VEHICLE MANAGER ═══ */
 function addVeiculo(){ veiculos.push({tipo:'carro',modelo:'',placa:''}); renderVeiculos(); }
 function removeVeiculo(idx){ veiculos.splice(idx,1); renderVeiculos(); }
@@ -842,7 +849,8 @@ function doSignup(){
     email:document.getElementById('cemail').value.trim(),
     prof:document.getElementById('cprof').value.trim(),
     rg:document.getElementById('crg').value.trim(),
-    rua:rua,num:num,comp:comp,bairro:bairro,
+    endRua:rua,endNum:num,endComp:comp,endBairro:bairro,
+    end:[rua,num,comp,bairro].filter(Boolean).join(', '),
     cidade:document.getElementById('ccidade').value.trim(),
     cep:document.getElementById('ccep').value.trim(),
     vinculo:document.getElementById('cvinculo').value,
@@ -853,12 +861,12 @@ function doSignup(){
     disp:document.getElementById('cdisp').value,
     saude:document.getElementById('csaude').value.trim(),
     hab:document.getElementById('chab').value.trim(),
-    camInteresse:camInt,camTam:camTam,foto:'',
-    areas:areas,area:areas.length>0?areas[0]:'',
+    camisaInteresse:camInt,camisa:camTam,foto:'',
+    area:areas,
     tipo:'Novo',pts:0,isAdmin:false,
-    ed2021:document.getElementById('ced2021').checked,
-    ed2023:document.getElementById('ced2023').checked,
-    indicado:indicadoPor,
+    ed2021:document.getElementById('ced2021').checked?'sim':'nao',
+    ed2023:document.getElementById('ced2023').checked?'sim':'nao',
+    indicadoPor:indicadoPor,
     authImg:document.getElementById('auth-img').checked,
     authDados:document.getElementById('auth-dados').checked,
   };
@@ -925,16 +933,16 @@ function mHome(){
   var h='';
   if(isBday) h+='<div class="card" style="border:2px solid var(--y);background:rgba(245,216,0,.07);text-align:center;padding:20px;margin-bottom:11px;"><div style="font-size:38px;">🎂🐂</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:var(--y);">FELIZ ANIVERSÁRIO!</div><div style="font-size:13px;color:var(--mt);margin-top:5px;">'+user.nome.split(' ')[0]+', a URTA Q RIVA celebra você! 🏆</div></div>';
   h+='<div class="hero"><div class="hero-lbl">🏆 Faltam para a gincana</div><div class="hero-nums"><div class="hb"><div class="hn">'+d.days+'</div><div class="hu">dias</div></div><div class="hb"><div class="hn">'+d.hours+'</div><div class="hu">horas</div></div><div class="hb"><div class="hn">'+d.mins+'</div><div class="hu">min</div></div></div><div class="hero-date"><strong>30 out · 1 nov 2026</strong> — Garibaldi RS</div></div>';
-  h+='<div class="sec">⭐ Seus pontos</div><div class="pts-bar"><div><div class="ptsl">Pontuação</div><div class="ptsn">'+(user.pts||0)+' <span style="font-size:16px;color:var(--mt);">pts</span></div></div><div style="text-align:right;"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;color:var(--mt);letter-spacing:1px;">POSIÇÃO</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:34px;color:var(--y);">'+(myRank>0?'#'+myRank:'—')+'</div></div></div>';
+  h+='<div class="sec">⭐ Seus pontos</div><div class="card" style="text-align:center;padding:24px 20px;"><div style="font-size:32px;margin-bottom:10px;">⏳</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--y);letter-spacing:2px;margin-bottom:6px;">EM BREVE</div><div style="font-size:12px;color:var(--mt);line-height:1.6;">A pontuação será atualizada em breve.<br>Continue acompanhando!</div></div>';
   // Progress bar — % only, no money values
   h+='<div class="sec">💰 Arrecadação</div><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;">Meta da equipe</div><div style="font-size:14px;font-weight:700;color:var(--y);">'+pct+'% concluído</div></div>'+pb('pb-home',pct)+'<div class="pms"><div class="ms'+(pct>=0?' done':'')+'"><div class="dot"></div>0%</div><div class="ms'+(pct>=25?' done':'')+'"><div class="dot"></div>25%</div><div class="ms'+(pct>=50?' done':'')+'"><div class="dot"></div>50%</div><div class="ms'+(pct>=75?' done':'')+'"><div class="dot"></div>75%</div><div class="ms'+(pct>=100?' done':'')+'"><div class="dot"></div>🏆</div></div></div>';
   // Compact patrocínio
   h+='<div class="sec">🤝 Apoie a equipe</div><div style="background:linear-gradient(135deg,var(--gd),rgba(245,216,0,.06));border:1px solid rgba(245,216,0,.3);border-radius:12px;padding:14px;margin-bottom:11px;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:17px;color:var(--y);letter-spacing:2px;margin-bottom:7px;">AJUDE A URTA Q RIVA A VENCER</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"><span style="background:rgba(245,216,0,.1);border:1px solid rgba(245,216,0,.2);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--y);font-family:\'Barlow Condensed\',sans-serif;">💛 Contribuição Espontânea</span><span style="background:rgba(245,216,0,.1);border:1px solid rgba(245,216,0,.2);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--y);font-family:\'Barlow Condensed\',sans-serif;">🏢 Patrocínio Oficial</span><span style="background:rgba(245,216,0,.1);border:1px solid rgba(245,216,0,.2);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--y);font-family:\'Barlow Condensed\',sans-serif;">🎁 Doação de Material</span></div><button class="btn-y" style="width:100%;padding:10px;" onclick="contatarDir()">📞 Fale com a diretoria</button></div>';
-  h+='<div class="sec">📅 Próximos eventos</div>'+upEvts(3);
+  h+='<div class="sec">📅 Próximos eventos</div>'+upEvtsGincana(3);
   return h;
 }
 
-function contatarDir(){alert('URTA Q RIVA — Diretoria\n\n📧 urtaqriva@gmail.com\n📱 (54) 99999-0001\n\nFicamos felizes em conversar sobre como você pode apoiar a equipe!');}
+function contatarDir(){alert('URTA Q RIVA — Diretoria\n\n📧 urtaqriva@gmail.com\n📱 (54) 99930-4776\n\nFicamos felizes em conversar sobre como você pode apoiar a equipe!');}
 
 /* RANK */
 function mRank(){
@@ -1138,9 +1146,9 @@ function mPerfil(){
   h+='<div class="fi-2"><div class="fi"><label>E-mail</label><input id="p-email" type="email" value="'+(m.email||'')+'"></div><div class="fi"><label>Profissão</label><input id="p-prof" type="text" value="'+(m.prof||'')+'"></div></div>';
 
   h+='<div class="fi-sec">Endereço</div>';
-  h+='<div class="fi"><label>Rua / Avenida</label><input id="p-rua" type="text" value="'+(m.endRua||m.end||'')+'"></div>';
-  h+='<div class="fi-2"><div class="fi"><label>Número</label><input id="p-num" type="text" value="'+(m.endNum||'')+'"></div><div class="fi"><label>Complemento</label><input id="p-comp" type="text" value="'+(m.endComp||'')+'"></div></div>';
-  h+='<div class="fi"><label>Bairro</label><input id="p-bairro" type="text" value="'+(m.endBairro||'')+'"></div>';
+  h+='<div class="fi"><label>Rua / Avenida</label><input id="p-rua" type="text" value="'+(m.endRua||m.rua||m.end||'')+'"></div>';
+  h+='<div class="fi-2"><div class="fi"><label>Número</label><input id="p-num" type="text" value="'+(m.endNum||m.num||'')+'"></div><div class="fi"><label>Complemento</label><input id="p-comp" type="text" value="'+(m.endComp||m.comp||'')+'"></div></div>';
+  h+='<div class="fi"><label>Bairro</label><input id="p-bairro" type="text" value="'+(m.endBairro||m.bairro||'')+'"></div>';
   h+='<div class="fi-2"><div class="fi"><label>Município</label><input id="p-cidade" type="text" value="'+(m.cidade||'')+'"></div><div class="fi"><label>CEP</label><input id="p-cep" type="text" value="'+(m.cep||'')+'"></div></div>';
   h+='<div class="fi"><label>Vínculo com Garibaldi</label><select id="p-vinculo" onchange="togglePVinculo()">'+vinOpts.map(function(v){return '<option'+(m.vinculo===v?' selected':'')+'>'+v+'</option>';}).join('')+'</select></div>';
 
@@ -1148,7 +1156,7 @@ function mPerfil(){
   h+='<div id="p-nome-equipe" style="display:'+(m.outraEquipe==='sim'?'block':'none')+'"><div class="fi-2"><div class="fi"><label>Município da equipe</label><input id="p-mun-equipe" type="text" value="'+(m.munOutraEquipe||'')+'"></div><div class="fi"><label>Nome da equipe</label><input id="p-cnome-equipe" type="text" value="'+(m.nomeOutraEquipe||'')+'"></div></div></div>';
 
   h+='<div class="fi-sec">Complemento</div>';
-  var camInt=m.camisaInteresse||'nao';
+  var camInt=m.camisaInteresse||m.camInteresse||'nao';
   h+='<div class="fi"><label>Interesse em adquirir a nova camiseta?</label><select id="p-cam-int" onchange="var w=document.getElementById(\'p-cam-wrap\');w.style.display=this.value===\'sim\'?\'block\':\'none\'"><option value="nao"'+(camInt!=='sim'?' selected':'')+'>Não tenho interesse no momento</option><option value="sim"'+(camInt==='sim'?' selected':'')+'>Sim, quero a nova camiseta!</option></select></div>';
   h+='<div class="fi" id="p-cam-wrap" style="display:'+(camInt==='sim'?'block':'none')+'"><label>Tamanho</label><select id="p-camisa">'+tamOpts.map(function(v){return '<option'+(m.camisa===v?' selected':'')+'>'+v+'</option>';}).join('')+'</select></div>';
   h+='<div class="fi"><label>Disponibilidade</label><select id="p-disp">'+dispOpts.map(function(v){return '<option'+(m.disp===v?' selected':'')+'>'+v+'</option>';}).join('')+'</select></div>';
@@ -1175,11 +1183,12 @@ function mPerfil(){
   h+='<button type="button" onclick="addVeiculoPerfil()" style="width:100%;padding:8px;background:rgba(245,216,0,.08);border:1px dashed rgba(245,216,0,.3);border-radius:8px;color:var(--y);font-family:\'Barlow Condensed\',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;margin-bottom:4px;">+ ADICIONAR VEÍCULO</button>';
 
   h+='<div class="fi-sec">Indicação</div>';
-  h+='<div class="fi"><label>Você foi convidado por algum membro?</label><input id="p-indicado" type="text" value="'+(m.indicadoPor||'')+'"></div>';
+  h+='<div class="fi"><label>Você foi convidado por algum membro?</label><input id="p-indicado" type="text" value="'+(m.indicadoPor||m.indicado||'')+'"></div>';
 
   h+='<button class="btn-y btn-yw" style="margin-top:14px;" onclick="savePerfil()">💾 SALVAR ALTERAÇÕES</button>';
   h+='</div>';
   // render veículos for profile after returning
+  window._pVeiculos = null;
   setTimeout(function(){renderPerfilVeiculos(m);},50);
   return h;
 }
@@ -1298,13 +1307,13 @@ function aHome(){
     for(var i=0;i<bday.length;i++) h+='<div style="font-size:14px;font-weight:600;">'+bday[i].nome+' · '+(bday[i].email||'sem email')+'</div>';
     h+='</div>';
   }
-  h+='<div class="sec">📊 Visão geral</div><div class="stat-grid"><div class="stat-c"><div class="stat-n">'+MEMBERS.length+'</div><div class="stat-l">Membros</div></div><div class="stat-c"><div class="stat-n">'+MURAL.filter(function(f){return !f.ok;}).length+'</div><div class="stat-l">Fotos pend.</div></div><div class="stat-c"><div class="stat-n">'+pct+'%</div><div class="stat-l">Meta</div></div></div>';
+  h+='<div class="sec">📊 Visão geral</div><div class="stat-grid"><div class="stat-c"><div class="stat-n">'+MEMBERS.length+'</div><div class="stat-l">Membros</div></div><div class="stat-c"><div class="stat-n">'+pct+'%</div><div class="stat-l">Meta</div></div></div>';
   h+='<div class="card">'+pb('pb-a',pct)+'<div style="text-align:right;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;color:var(--mt);margin-top:4px;">'+fmt(tot)+' de '+fmt(META)+'</div></div>';
   if(semBday.length){
     h+='<div class="sec">🎂 Aniversários — próximos 7 dias</div>';
     for(var i=0;i<semBday.length;i++){var p=semBday[i].nasc.split('-');h+='<div class="bday-item"><span style="font-size:20px;">🎂</span><div><div style="font-weight:600;">'+semBday[i].nome+'</div><div style="font-size:11px;color:var(--mt);">'+p[2]+'/'+p[1]+' · '+(semBday[i].email||'sem email')+'</div></div></div>';}
   }
-  h+='<div class="sec">📅 Próximos eventos</div>'+upEvts(4);
+  h+='<div class="sec">📅 Próximos eventos</div>'+upEvtsGincana(4);
   return h;
 }
 
@@ -1390,16 +1399,6 @@ function aMembros(){
     h+='</div>'; // end card
   }
 
-  // Fotos pendentes
-  var pending=MURAL.filter(function(f){return !f.ok;});
-  h+='<div class="sec">🖼️ Aprovar fotos ('+pending.length+' pendentes)</div>';
-  if(pending.length){
-    for(var i=0;i<pending.length;i++){
-      h+='<div class="card" style="display:flex;gap:10px;align-items:center;"><div style="flex:1;font-size:13px;"><strong>'+pending[i].quem+'</strong><br><span style="color:var(--mt);">'+pending[i].desc+'</span></div><button class="btn-y" onclick="aprovar('+pending[i].id+')">✓ Aprovar</button></div>';
-    }
-  } else {
-    h+='<div style="font-size:12px;color:var(--mt);padding:6px;">Nenhuma foto pendente.</div>';
-  }
   return h;
 }
 
