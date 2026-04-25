@@ -1195,31 +1195,52 @@ function mPerfil(){
   return h;
 }
 
-function renderPerfilVeiculos(m){
+function _renderCardVeiculo(i,v){
+  var h='';
+  h+='<div style="background:rgba(255,255,255,.05);border:1px solid var(--br);border-radius:8px;padding:12px;margin-bottom:8px;">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+  h+='<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:1px;color:var(--y);text-transform:uppercase;">Ve\u00edculo '+(i+1)+'</span>';
+  h+='<button type="button" onclick="removePVeiculo('+i+')" style="background:none;border:none;color:var(--mt);cursor:pointer;font-size:16px;line-height:1;padding:0 4px;">&times;</button>';
+  h+='</div>';
+  h+='<div class="fi-2">';
+  h+='<div class="fi"><label>Tipo</label><select onchange="window._pVeiculos['+i+'].tipo=this.value">';
+  h+='<option value="carro"'+(v.tipo==='carro'?' selected':'')+'>&#x1F697; Carro</option>';
+  h+='<option value="moto"'+(v.tipo==='moto'?' selected':'')+'>&#x1F3CD;&#xFE0F; Moto</option>';
+  h+='<option value="utilitario"'+(v.tipo==='utilitario'?' selected':'')+'>&#x1F69B; Utilit\u00e1rio</option>';
+  h+='</select></div>';
+  h+='<div class="fi"><label>Modelo</label><input type="text" placeholder="HB20, Gol..." value="'+v.modelo+'" oninput="window._pVeiculos['+i+'].modelo=this.value"></div>';
+  h+='</div>';
+  h+='<div class="fi"><label>Placa</label><input type="text" placeholder="AAA-0000" maxlength="8" value="'+v.placa+'" oninput="window._pVeiculos['+i+'].placa=this.value.toUpperCase()"></div>';
+  h+='</div>';
+  return h;
+}
+function _renderListaVeiculos(){
   var pv=document.getElementById('p-veiculos-list'); if(!pv)return;
-  // init perfil veiculos from member data
-  if(!window._pVeiculos) window._pVeiculos=(m.veiculos||[]).slice();
   var html='';
-  for(var i=0;i<window._pVeiculos.length;i++){
-    var v=window._pVeiculos[i];
-    html+='<div style="background:rgba(255,255,255,.05);border:1px solid var(--br);border-radius:8px;padding:12px;margin-bottom:8px;">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:1px;color:var(--y);text-transform:uppercase;">Veículo '+(i+1)+'</span>'
-    +'<button onclick="removePVeiculo('+i+')" style="background:none;border:none;color:var(--mt);cursor:pointer;font-size:14px;">✕</button></div>'
-    +'<div class="fi-2"><div class="fi"><label>Tipo</label><select onchange="window._pVeiculos['+i+'].tipo=this.value"><option value="carro"'+(v.tipo==='carro'?' selected':'')+'>🚗 Carro</option><option value="moto"'+(v.tipo==='moto'?' selected':'')+'>🏍️ Moto</option><option value="utilitario"'+(v.tipo==='utilitario'?' selected':'')+'>🚛 Utilitário</option></select></div>'
-    +'<div class="fi"><label>Modelo</label><input type="text" placeholder="HB20, Gol..." value="'+v.modelo+'" oninput="window._pVeiculos['+i+'].modelo=this.value"></div></div>'
-    +'<div class="fi"><label>Placa</label><input type="text" placeholder="AAA-0000" maxlength="8" value="'+v.placa+'" oninput="window._pVeiculos['+i+'].placa=this.value.toUpperCase()"></div>'
-    +'</div>';
-  }
+  for(var i=0;i<window._pVeiculos.length;i++) html+=_renderCardVeiculo(i,window._pVeiculos[i]);
   pv.innerHTML=html;
 }
+function renderPerfilVeiculos(m){
+  var pv=document.getElementById('p-veiculos-list'); if(!pv)return;
+  var fonte=(m&&Array.isArray(m.veiculos))?m.veiculos:[];
+  window._pVeiculos=fonte.map(function(v){
+    return {
+      tipo:  (v&&v.tipo  &&v.tipo  !=='undefined')?v.tipo  :'carro',
+      modelo:(v&&v.modelo&&v.modelo!=='undefined')?v.modelo:'',
+      placa: (v&&v.placa &&v.placa !=='undefined')?v.placa :''
+    };
+  });
+  _renderListaVeiculos();
+}
 function addVeiculoPerfil(){
-  if(!window._pVeiculos) window._pVeiculos=[];
+  if(!Array.isArray(window._pVeiculos)) window._pVeiculos=[];
   window._pVeiculos.push({tipo:'carro',modelo:'',placa:''});
-  renderPerfilVeiculos(user);
+  _renderListaVeiculos();
 }
 function removePVeiculo(idx){
+  if(!Array.isArray(window._pVeiculos))return;
   window._pVeiculos.splice(idx,1);
-  renderPerfilVeiculos(user);
+  _renderListaVeiculos();
 }
 
 function togglePVinculo(){}
@@ -1274,7 +1295,9 @@ function savePerfil(){
   u.ed2023=document.getElementById('p-ed23').checked?'sim':'nao';
   u.indicadoPor=document.getElementById('p-indicado').value;
   if(window._novaFoto){u.foto=window._novaFoto;window._novaFoto=null;}
-  if(window._pVeiculos!==null&&window._pVeiculos!==undefined){u.veiculos=window._pVeiculos.slice();}
+  if(Array.isArray(window._pVeiculos)){
+    u.veiculos=window._pVeiculos.filter(function(v){return v&&(v.modelo||v.placa);}).map(function(v){return {tipo:v.tipo||'carro',modelo:v.modelo||'',placa:v.placa||''};});
+  }
   window._pVeiculos=null;
   var newAreas=[];
   var allSubs=[];
