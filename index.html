@@ -1274,7 +1274,7 @@ function savePerfil(){
   u.ed2023=document.getElementById('p-ed23').checked?'sim':'nao';
   u.indicadoPor=document.getElementById('p-indicado').value;
   if(window._novaFoto){u.foto=window._novaFoto;window._novaFoto=null;}
-  if(window._pVeiculos)u.veiculos=window._pVeiculos.slice();
+  if(window._pVeiculos!==null&&window._pVeiculos!==undefined){u.veiculos=window._pVeiculos.slice();}
   window._pVeiculos=null;
   var newAreas=[];
   var allSubs=[];
