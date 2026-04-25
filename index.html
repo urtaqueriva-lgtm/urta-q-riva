@@ -276,6 +276,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bk);color:var(--cr);min-he
     <div class="fi"><label>Nome completo</label><input id="ln" type="text" placeholder="Seu nome completo..." autocomplete="name"></div>
     <div class="fi"><label>CPF</label><input id="lc" type="text" placeholder="000.000.000-00" maxlength="14" inputmode="numeric"></div>
     <div class="login-err" id="lerr">Dados não encontrados. Verifique ou fale com a diretoria.</div>
+    <p style="font-size:12px;color:var(--mt);text-align:center;margin-top:10px;">Problemas para acessar? Fale com a diretoria:<br><span style="color:var(--y);">📱 (54) 99930-4776</span></p>
     <button class="btn-y btn-yw" onclick="doLogin()">ENTRAR</button>
   </div>
 </div>
@@ -937,98 +938,23 @@ function contatarDir(){alert('URTA Q RIVA — Diretoria\n\n📧 urtaqriva@gmail.
 
 /* RANK */
 function mRank(){
-  var sorted=MEMBERS.slice().sort(function(a,b){return (b.pts||0)-(a.pts||0);});
-  var pc=['p1','p2','p3'];
-  var medals=['🥇','🥈','🥉'];
-  var h='<div class="sec">🏆 Ranking da equipe</div><div class="card" style="margin-bottom:12px;"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:13px;color:var(--mt);">Ganhe pontos e suba no ranking!</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;"><div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:18px;">🧩</span><div style="flex:1;">Enigma semanal acertado</div><strong style="color:var(--y);">10 pts</strong></div><div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:18px;">👥</span><div style="flex:1;">Indicar novo membro confirmado</div><strong style="color:var(--y);">15 pts</strong></div><div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:18px;">🎟️</span><div style="flex:1;">Participar de evento de arrecadação</div><strong style="color:var(--y);">20 pts</strong></div></div></div>';
-  for(var i=0;i<sorted.length;i++){
-    var m=sorted[i];
-    h+='<div class="rank-item'+(m.id===user.id?' me':'')+'"><div class="rpos '+(pc[i]||'pn')+'">'+(i<3?medals[i]:i+1)+'</div><div class="rav">'+ini(m.nome)+'</div><div class="rinfo"><div class="rname">'+m.nome+(m.id===user.id?' 👈':'')+'</div><div class="rarea">'+(m.area&&m.area.length?aLbl(m.area[0]):'—')+'</div></div><div class="rpts">'+(m.pts||0)+'<span>pts</span></div></div>';
-  }
+  var h='<div class="sec">🏆 Ranking da equipe</div>';
+  h+='<div class="card" style="text-align:center;padding:32px 20px;">';
+  h+='<div style="font-size:36px;margin-bottom:12px;">🏆</div>';
+  h+='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:var(--y);letter-spacing:2px;margin-bottom:8px;">EM BREVE</div>';
+  h+='<div style="font-size:13px;color:var(--mt);line-height:1.6;">O ranking será atualizado em breve.<br>Continue acompanhando!</div>';
+  h+='</div>';
   return h;
 }
 
 /* ENIGMA */
 function mEnigma(){
-  var e=ENIGMAS[0];
-  for(var i=0;i<ENIGMAS.length;i++){if(ENIGMAS[i].ativo){e=ENIGMAS[i];break;}}
-  var key='e_'+e.id;
-  var ans=ENIG_ANS[key];
-
-  // Who already answered
-  var acertaram=MEMBERS.filter(function(m){return ENIG_ANS['e_'+e.id+'_'+m.id]||ENIG_ANS['e_'+e.id];});
-  // Count unique answerers stored per-member
-  var acertaramNomes=[];
-  for(var i=0;i<MEMBERS.length;i++){
-    if(ENIG_ANS['e_'+e.id+'_m'+MEMBERS[i].id]) acertaramNomes.push(MEMBERS[i].nome.split(' ')[0]);
-  }
-
   var h='<div class="sec">🧩 Enigma da semana</div>';
-
-  // Main card
-  h+='<div class="enig-box">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
-  h+='<div class="ew">'+e.semana+'</div>';
-  h+='<div class="epts">🏆 +'+e.pts+' pts</div>';
+  h+='<div class="card" style="text-align:center;padding:32px 20px;">';
+  h+='<div style="font-size:36px;margin-bottom:12px;">⏳</div>';
+  h+='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:var(--y);letter-spacing:2px;margin-bottom:8px;">EM BREVE</div>';
+  h+='<div style="font-size:13px;color:var(--mt);line-height:1.6;">O enigma desta semana está sendo preparado.<br>Volte em breve para participar!</div>';
   h+='</div>';
-  h+='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:2px;color:var(--g2);text-transform:uppercase;margin-bottom:8px;">Garibaldi &amp; a Gincana</div>';
-  h+='<div class="eq" style="font-size:20px;margin-bottom:14px;">'+e.pergunta+'</div>';
-
-  // PDF link
-  if(e.pdfLink){
-    h+='<a href="'+e.pdfLink+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:rgba(245,216,0,.1);border:1px solid rgba(245,216,0,.3);border-radius:8px;padding:9px 14px;color:var(--y);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px;text-decoration:none;margin-bottom:12px;width:100%;">📄 VER MATERIAL DE APOIO EM PDF</a>';
-  }
-
-  if(ans){
-    h+='<div class="eanswered" style="font-size:15px;padding:14px;">✅ Você acertou! +'+e.pts+' pts conquistados.<br><span style="font-size:12px;color:rgba(82,190,128,.7);">Resposta: <strong>'+e.resposta+'</strong></span></div>';
-  } else {
-    // Hint box
-    h+='<div style="background:rgba(35,176,80,.08);border:1px solid rgba(35,176,80,.2);border-radius:8px;padding:10px 13px;margin-bottom:12px;">';
-    h+='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;letter-spacing:2px;color:var(--g2);text-transform:uppercase;margin-bottom:4px;">💡 Dica</div>';
-    h+='<div style="font-size:13px;color:var(--cr);font-style:italic;">'+e.dica+'</div>';
-    h+='</div>';
-    // Answer input
-    h+='<div class="einp"><input id="er" type="text" placeholder="Digite sua resposta aqui..." style="font-size:15px;padding:12px;"><button class="btn-y" onclick="checkEnigma()" style="padding:12px 20px;font-size:14px;">Enviar</button></div>';
-    h+='<div class="eres" id="eres"></div>';
-  }
-
-  // Who answered counter
-  h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);">';
-  h+='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;letter-spacing:2px;color:var(--mt);text-transform:uppercase;margin-bottom:6px;">Quem já acertou</div>';
-  if(acertaramNomes.length){
-    h+='<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-    for(var i=0;i<acertaramNomes.length;i++){
-      h+='<span style="background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);border-radius:4px;padding:2px 8px;font-size:11px;color:#52be80;">✓ '+acertaramNomes[i]+'</span>';
-    }
-    h+='</div>';
-  } else {
-    h+='<div style="font-size:12px;color:var(--mt);font-style:italic;">Nenhum acerto ainda — seja o primeiro! 🏆</div>';
-  }
-  h+='</div>';
-  h+='</div>'; // end enig-box
-
-  // Previous enigmas
-  var prevs=ENIGMAS.filter(function(en){return !en.ativo;});
-  if(prevs.length){
-    h+='<div class="sec">📚 Enigmas anteriores</div>';
-    for(var i=0;i<prevs.length;i++){
-      var en=prevs[i];
-      var myAns=ENIG_ANS['e_'+en.id];
-      h+='<div class="card">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-      h+='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;letter-spacing:2px;color:var(--g2);text-transform:uppercase;">'+en.semana+'</div>';
-      h+='<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(245,216,0,.1);color:var(--y);font-family:\'Barlow Condensed\',sans-serif;">+'+en.pts+' pts</span>';
-      h+='</div>';
-      h+='<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700;margin-bottom:8px;">'+en.pergunta+'</div>';
-      if(en.pdfLink) h+='<a href="'+en.pdfLink+'" target="_blank" style="font-size:11px;color:var(--y);text-decoration:none;">📄 Material PDF</a>';
-      if(myAns){
-        h+='<div style="margin-top:8px;font-size:13px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:6px;padding:8px 12px;">✅ Sua resposta: <strong style="color:var(--y);">'+en.resposta+'</strong></div>';
-      } else {
-        h+='<div style="margin-top:8px;font-size:12px;color:var(--mt);font-style:italic;">🔒 Resposta visível somente para quem acertou.</div>';
-      }
-      h+='</div>';
-    }
-  }
   return h;
 }
 
@@ -1058,7 +984,7 @@ function checkEnigma(){
 /* CALENDAR */
 function mCal(){
   var hoje=new Date();
-  var fut=EVENTOS.filter(function(e){return new Date(e.data+'T12:00')>=hoje;}).sort(function(a,b){return new Date(a.data)-new Date(b.data);});
+  var fut=EVENTOS.filter(function(e){return new Date(e.data+'T12:00')>=hoje&&e.tag==='gincana';}).sort(function(a,b){return new Date(a.data)-new Date(b.data);});
   var h='<div class="sec">📅 Calendário de eventos</div>';
   for(var i=0;i<fut.length;i++){
     var e=fut[i]; var dt=fmtD(e.data);
@@ -1151,13 +1077,6 @@ function renderAreaDetail(areaId){
     h+='<div style="text-align:center;color:var(--mt);font-size:13px;padding:16px;">Nenhuma mensagem ainda. Seja o primeiro!</div>';
   }
   h+='</div><div class="chat-inp-row"><input id="chatmsg" type="text" placeholder="Escreva uma ideia ou comentário..." onkeydown="if(event.key===\'Enter\')sendChat(\''+areaId+'\')"><button class="btn-y" onclick="sendChat(\''+areaId+'\')">→</button></div></div>';
-
-  // Mural
-  h+='<div class="sec">📸 Mural da equipe</div><div class="mural-grid"><div class="mup" onclick="uploadFoto()"><span>➕</span><p style="font-size:10px;color:var(--mt);font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px;text-transform:uppercase;">Enviar foto</p></div>';
-  for(var i=0;i<MURAL.length;i++){
-    if(MURAL[i].ok) h+='<div class="mph"><img src="'+MURAL[i].url+'" alt="" onerror="this.parentNode.innerHTML=\'📷\'"></div>';
-  }
-  h+='</div>';
 
   return h;
 }
